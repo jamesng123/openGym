@@ -4,6 +4,33 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- Interval cardio (lib/cardio-intervals.js) ---
+  "Add repeat": "Adicionar repetição",
+  "Add step": "Adicionar passo",
+  "Add your max heart rate in the exercise settings to see zones in bpm.": "Adicione sua frequência cardíaca máxima nas configurações do exercício para ver as zonas em bpm.",
+  "Distance steps end when you tap Done.": "Os passos por distância terminam quando você toca em Feito.",
+  "Ease off": "Diminua um pouco",
+  "From (bpm)": "De (bpm)",
+  "HR zone": "Zona de FC",
+  "In the zone": "Na zona",
+  "Interval plan": "Plano de intervalos",
+  "Interval timer": "Timer de intervalos",
+  "Max heart rate": "Frequência cardíaca máxima",
+  "No heart rate yet": "Ainda sem frequência cardíaca",
+  "Push a little": "Acelere um pouco",
+  "Rate how hard each step felt on its row in the workout.": "Avalie o esforço de cada passo na linha dele no treino.",
+  "Remove repeat": "Remover repetição",
+  "Remove step": "Remover passo",
+  "Repeat (times)": "Repetir (vezes)",
+  "Steady": "Contínuo",
+  "Tap start and follow the cues.": "Toque em Iniciar e siga os sinais.",
+  "Target effort": "Esforço alvo",
+  "To (bpm)": "Até (bpm)",
+  "Workout complete": "Treino concluído",
+  "Your own pace": "No seu ritmo",
+  "{0} steps": "{0} passos",
+  "Cool-down": "Desaquecimento",
+  "Pyramid": "Pirâmide",
   // --- Settings first screen in groups (#1105); "Watches" (Relógios) is inherited ---
   "Set once": "Configurar uma vez",
   "Connections": "Conexões",

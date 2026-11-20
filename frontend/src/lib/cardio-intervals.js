@@ -285,3 +285,49 @@ export const PRESETS = {
   tempo: { steps: [st('warm', 600, { zone: 2 }), st('work', 1200, { zone: 3 }), st('cool', 600, { zone: 1 })] },
 }
 export const PRESET_KEYS = Object.keys(PRESETS)
+
+/* ---------- the profile and the session ---------- */
+
+/** Max heart rate: the profile's own, else age-predicted (Tanaka, 208 - 0.7 × age) from its birth year. */
+export function maxHrOf(S, now = Date.now()) {
+  const own = Math.round(Number(S?.maxHr))
+  if (own >= 100 && own <= 240) return own
+  const age = new Date(now).getFullYear() - Math.round(Number(S?.birthYear))
+  return age >= 10 && age <= 100 ? Math.round(208 - 0.7 * age) : null
+}
+
+/**
+ * The workout's rows for a slot with an interval plan: one cardio set per step, in run order,
+ * not done yet. `speed` is carried so the row reads like any cardio set; a distance step starts
+ * at its distance and no time.
+ */
+export function plannedRows(cfg) {
+  const speed = Number(cfg?.speed) > 0 ? Number(cfg.speed) : 0
+  return flatten(cfg?.ivl).map((s, i) => ({
+    min: s.sec != null ? Math.round(s.sec / 6) / 10 : 0,
+    ...(s.m != null ? { km: s.m / 1000 } : {}),
+    speed,
+    ivl: { k: s.k, n: i + 1 },
+    done: false,
+  }))
+}
+
+/** Writes the run's rows over an entry's sets: the logged ones in place of their planned rows. Mutates `entry`. */
+export function writeRows(entry, run) {
+  if (!entry || !run) return entry
+  const rows = rowsOf(run)
+  const sets = Array.isArray(entry.sets) ? entry.sets : []
+  const byN = new Map(rows.map(r => [r.ivl.n, r]))
+  const speed = sets.find(s => Number(s?.speed) > 0)?.speed
+  const out = []
+  const seen = new Set()
+  for (const s of sets) {
+    const n = s?.ivl?.n
+    if (n && byN.has(n)) { out.push({ ...(speed ? { speed } : {}), ...byN.get(n) }); seen.add(n); continue }
+    out.push(s)
+  }
+  for (const r of rows) if (!seen.has(r.ivl.n)) out.push({ ...(speed ? { speed } : {}), ...r })
+  // A step logged without a speed and with a distance reads as distance and pace (history.js setLabel).
+  entry.sets = out
+  return entry
+}

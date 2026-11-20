@@ -125,3 +125,29 @@ describe('the run', () => {
     expect(startRun(null, T).ended).toBe('done')
   })
 })
+
+describe('profile and session', () => {
+  it('max HR is the profile’s, else from the birth year', async () => {
+    const { maxHrOf } = await import('./cardio-intervals.js')
+    const now = new Date('2026-06-01').getTime()
+    expect(maxHrOf({ maxHr: 188 }, now)).toBe(188)
+    expect(maxHrOf({ birthYear: 1996 }, now)).toBe(187)
+    expect(maxHrOf({}, now)).toBeNull()
+  })
+  it('plans one row per step and writes the run over them', async () => {
+    const { plannedRows, writeRows } = await import('./cardio-intervals.js')
+    const rows = plannedRows({ speed: 9, ivl: plan })
+    expect(rows).toHaveLength(6)
+    expect(rows[0]).toEqual({ min: 1, speed: 9, ivl: { k: 'warm', n: 1 }, done: false })
+    expect(rows[5]).toMatchObject({ min: 0, km: 0.4 })
+    const T = 0
+    const run = startRun(plan, T)
+    tick(run, 90_000)
+    const entry = { sets: rows }
+    writeRows(entry, run)
+    expect(entry.sets).toHaveLength(6)
+    expect(entry.sets[0]).toMatchObject({ min: 1, done: true, speed: 9 })
+    expect(entry.sets[1]).toMatchObject({ min: 0.5, done: true })
+    expect(entry.sets[2].done).toBe(false)
+  })
+})

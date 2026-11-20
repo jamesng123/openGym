@@ -89,6 +89,11 @@ import { setNoteOf } from '../lib/set-notes.js'
 import { SET_TAGS, setTagOf, setTagName, withSetTag } from '../lib/set-tags.js'
 import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
+import { IntervalCard } from '../components/IntervalPlayer.jsx'
+import { flatten as ivlSteps, maxHrOf } from '../lib/cardio-intervals.js'
+import { kindName as ivlKind, effortText as ivlEffort } from '../lib/cardio-intervals-copy.js'
+// "Work 2/4 · RPE 8": what an interval row was planned as.
+const ivlRowLabel = (cfg, n, maxHr) => { const st = ivlSteps(cfg?.ivl)[n - 1]; return st ? [ivlKind(st.k) + (st.rep ? ` ${st.rep.i}/${st.rep.n}` : ''), ivlEffort(st.eff, maxHr)].filter(Boolean).join(' · ') : '' }
 import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
 import { tempoOf, normalizeTempo, guideReps } from '../lib/tempo.js'
 import { usesBands, setBandsOf, toggleSetBand } from '../lib/bands.js'
@@ -1005,6 +1010,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
     {/* The skill ladder (lib/ladders.js): the next rung, and one tap to put it in the routine. */}
     {plan?.kind === 'ladder' && plan.next && EXIDX[plan.next] && <LadderNext entry={entry} next={plan.next} />}
     </>}
+    {/* An interval plan's clock: one tap opens the full-screen player (components/IntervalPlayer.jsx). */}
+    {cardio && !editing && <IntervalCard entryIdx={entryIdx} />}
     <div className="card" style={{ marginTop: 12, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}
@@ -1052,6 +1059,8 @@ function ExerciseBlock({ entryIdx, compact, listed, dense, editing, onToggle, on
               line under the inputs, so a narrow phone keeps all three columns. */}
           {!pairTail && cardio && effortOn && !isWarmupRow(s) && <div className="cardio-eff-line">
             <CardioEffortChip value={s.rpe ?? null} onOpen={() => effortPickerSheet('rpe', s.rpe ?? null, nv => onField(i, 'rpe', nv), { cardio: true })} />
+            {/* The interval step this row is (lib/cardio-intervals.js), and its target. */}
+            {s.ivl && <span className="small dim ivl-row" data-kind={s.ivl.k}>{ivlRowLabel(cfg, s.ivl.n, maxHrOf(S))}</span>}
           </div>}
           {swipeHint && swipeHint.i === i && swipeOn && <div className="swhint">
             <button type="button" onClick={() => setUI({ swipeHint: null })}>
