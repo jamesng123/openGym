@@ -5924,4 +5924,8 @@ export default {
   "{0} steps": "{0}단계",
   "Cool-down": "쿨다운",
   "Pyramid": "피라미드",
+  "Machine settings": "기구 설정",
+  "Pace {0}": "페이스 {0}",
+  "Set to {0}": "{0}(으)로 설정",
+  "Hills": "언덕",
 }

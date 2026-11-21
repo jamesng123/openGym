@@ -151,3 +151,33 @@ describe('profile and session', () => {
     expect(entry.sets[2].done).toBe(false)
   })
 })
+
+describe('machine settings per step', () => {
+  it('keeps speed, incline and level, clamped, and drops zeros', async () => {
+    const { cleanStep } = await import('./cardio-intervals.js')
+    expect(cleanStep({ k: 'work', sec: 60, speed: 12.34, incline: 2.3, level: 0 })).toEqual({ k: 'work', sec: 60, speed: 12.3, incline: 2.5 })
+    expect(cleanStep({ k: 'work', sec: 60, incline: 99, level: 45 })).toEqual({ k: 'work', sec: 60, incline: 40, level: 30 })
+  })
+  it('a treadmill plan sets each row to its step, and the run keeps them', async () => {
+    const { plannedRows, writeRows, PRESETS, cleanPlan } = await import('./cardio-intervals.js')
+    const tread = { steps: [{ k: 'warm', sec: 60, speed: 8 }, { rep: 2, steps: [{ k: 'work', sec: 30, speed: 14, incline: 1 }, { k: 'rec', sec: 30 }] }] }
+    const rows = plannedRows({ speed: 10, ivl: tread })
+    expect(rows.map(r => r.speed)).toEqual([8, 14, 10, 14, 10])
+    expect(rows[1].incline).toBe(1)
+    expect(rows[2].incline).toBeUndefined()
+    const run = startRun(tread, 0)
+    tick(run, 200_000)
+    const entry = { sets: rows }
+    writeRows(entry, run)
+    expect(entry.sets[1]).toMatchObject({ speed: 14, incline: 1, done: true, min: 0.5 })
+    expect(entry.sets[2]).toMatchObject({ speed: 10, done: true })
+    expect(cleanPlan(PRESETS.hills)).toEqual(PRESETS.hills)
+  })
+  it('says the settings and the pace', async () => {
+    const { machineText, paceOf } = await import('./cardio-intervals-copy.js')
+    expect(paceOf(12, 'kmh')).toBe('5:00 /km')
+    expect(machineText({ speed: 12, incline: 2 }, 'kmh', { pace: true })).toBe('12 km/h (5:00 /km) · 2% incline')
+    expect(machineText({ speed: 16.09344 }, 'mph')).toBe('10 mph')
+    expect(machineText({ level: 8 }, 'kmh')).toBe('Level 8')
+  })
+})

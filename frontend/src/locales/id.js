@@ -5889,4 +5889,8 @@ export default {
   "{0} steps": "{0} langkah",
   "Cool-down": "Pendinginan",
   "Pyramid": "Piramida",
+  "Machine settings": "Pengaturan mesin",
+  "Pace {0}": "Pace {0}",
+  "Set to {0}": "Atur ke {0}",
+  "Hills": "Tanjakan",
 };

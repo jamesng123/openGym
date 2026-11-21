@@ -5928,4 +5928,8 @@ export default {
   "{0} steps": "Шагов: {0}",
   "Cool-down": "Заминка",
   "Pyramid": "Пирамида",
+  "Machine settings": "Настройки тренажёра",
+  "Pace {0}": "Темп {0}",
+  "Set to {0}": "Установи {0}",
+  "Hills": "Подъёмы",
 }

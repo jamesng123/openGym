@@ -6003,4 +6003,8 @@ export default {
   "{0} steps": "{0}টি ধাপ",
   "Cool-down": "কুল-ডাউন",
   "Pyramid": "পিরামিড",
+  "Machine settings": "মেশিনের সেটিংস",
+  "Pace {0}": "গতি {0}",
+  "Set to {0}": "{0}-এ সেট করুন",
+  "Hills": "চড়াই",
 }

@@ -5890,4 +5890,8 @@ export default {
   "{0} steps": "{0} bước",
   "Cool-down": "Thả lỏng",
   "Pyramid": "Kim tự tháp",
+  "Machine settings": "Cài đặt máy",
+  "Pace {0}": "Tốc độ {0}",
+  "Set to {0}": "Đặt thành {0}",
+  "Hills": "Dốc",
 };

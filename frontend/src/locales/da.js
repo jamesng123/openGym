@@ -5864,4 +5864,8 @@ export default {
   "{0} steps": "{0} trin",
   "Cool-down": "Nedkøling",
   "Pyramid": "Pyramide",
+  "Machine settings": "Maskinindstillinger",
+  "Pace {0}": "Tempo {0}",
+  "Set to {0}": "Indstil til {0}",
+  "Hills": "Bakker",
 }

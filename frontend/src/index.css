@@ -4680,3 +4680,4 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .ivl-hr.above{background:rgba(255,69,58,.25);background:color-mix(in srgb, var(--red) 25%, transparent)}
 .ivl-hr-s{font-weight:500;opacity:.85}
 .ivl-row{margin-inline-start:10px;align-self:center}
+.ivl-set{display:inline-flex;gap:8px;align-items:center;margin-top:8px;padding:6px 12px;border-radius:999px;font-weight:600;background:rgba(10,132,255,.18)}

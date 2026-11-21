@@ -5927,4 +5927,8 @@ export default {
   "{0} steps": "{0} lépés",
   "Cool-down": "Levezetés",
   "Pyramid": "Piramis",
+  "Machine settings": "Gépbeállítások",
+  "Pace {0}": "Tempó {0}",
+  "Set to {0}": "Állítsd erre: {0}",
+  "Hills": "Emelkedők",
 }

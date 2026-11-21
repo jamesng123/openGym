@@ -5935,4 +5935,8 @@ export default {
   "{0} steps": "{0} ขั้น",
   "Cool-down": "คูลดาวน์",
   "Pyramid": "พีระมิด",
+  "Machine settings": "การตั้งค่าเครื่อง",
+  "Pace {0}": "เพซ {0}",
+  "Set to {0}": "ตั้งเป็น {0}",
+  "Hills": "ทางชัน",
 }

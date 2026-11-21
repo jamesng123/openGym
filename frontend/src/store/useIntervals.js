@@ -15,6 +15,7 @@ import { beep, chime, vibrate, unlock } from '../lib/sound.js'
 import { speak, voiceOpts } from '../lib/speech.js'
 import { onLiveHeartRate, liveHeartRate } from '../lib/phone-workout.js'
 import { t } from '../lib/i18n.js'
+import { speedUnitOf } from '../lib/speed.js'
 
 const KEY = 'gym_intervals_v1'
 const TICK_MS = 250
@@ -77,7 +78,7 @@ function feedback(run, events, now) {
       const st = run.steps[e.i]
       const hard = st?.k === 'work'
       beep(snd, hard ? 1320 : 660, 0.3); vibrate(hard ? [60, 40, 60] : 40)
-      say(cueText(st, maxHr), { queue: false })
+      say(cueText(st, maxHr, speedUnitOf(S())), { queue: false })
     } else if (e.type === 'end') {
       chime(snd, 'chime'); vibrate([120, 60, 120, 60, 200]); say(t('Workout complete'), { queue: false })
     }

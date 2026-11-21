@@ -5,6 +5,10 @@ import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
   // --- Interval cardio (lib/cardio-intervals.js) ---
+  "Machine settings": "Configurações da máquina",
+  "Pace {0}": "Ritmo {0}",
+  "Set to {0}": "Ajuste para {0}",
+  "Hills": "Subidas",
   "Add repeat": "Adicionar repetição",
   "Add step": "Adicionar passo",
   "Add your max heart rate in the exercise settings to see zones in bpm.": "Adicione sua frequência cardíaca máxima nas configurações do exercício para ver as zonas em bpm.",

@@ -5890,4 +5890,8 @@ export default {
   "{0} steps": "Kroky: {0}",
   "Cool-down": "Zklidnění",
   "Pyramid": "Pyramida",
+  "Machine settings": "Nastavení stroje",
+  "Pace {0}": "Tempo {0}",
+  "Set to {0}": "Nastav {0}",
+  "Hills": "Kopce",
 }

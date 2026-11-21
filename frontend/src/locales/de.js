@@ -5944,4 +5944,8 @@ export default {
   "{0} steps": "{0} Schritte",
   "Cool-down": "Cool-down",
   "Pyramid": "Pyramide",
+  "Machine settings": "Geräteeinstellungen",
+  "Pace {0}": "Tempo {0}",
+  "Set to {0}": "Einstellen auf {0}",
+  "Hills": "Hügel",
 }

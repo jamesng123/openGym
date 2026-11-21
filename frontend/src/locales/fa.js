@@ -5890,4 +5890,8 @@ export default {
   "{0} steps": "{0} مرحله",
   "Cool-down": "سردکردن",
   "Pyramid": "هرمی",
+  "Machine settings": "تنظیمات دستگاه",
+  "Pace {0}": "سرعت {0}",
+  "Set to {0}": "تنظیم روی {0}",
+  "Hills": "سربالایی",
 }

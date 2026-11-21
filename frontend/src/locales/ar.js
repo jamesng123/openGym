@@ -5979,4 +5979,8 @@ export default {
   "{0} steps": "{0} خطوات",
   "Cool-down": "تهدئة",
   "Pyramid": "هرم",
+  "Machine settings": "إعدادات الجهاز",
+  "Pace {0}": "الوتيرة {0}",
+  "Set to {0}": "اضبط على {0}",
+  "Hills": "مرتفعات",
 }

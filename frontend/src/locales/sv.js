@@ -5971,4 +5971,8 @@ export default {
   "{0} steps": "{0} steg",
   "Cool-down": "Nedvarvning",
   "Pyramid": "Pyramid",
+  "Machine settings": "Maskininställningar",
+  "Pace {0}": "Tempo {0}",
+  "Set to {0}": "Ställ in {0}",
+  "Hills": "Backar",
 }

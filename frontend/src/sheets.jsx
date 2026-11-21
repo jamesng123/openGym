@@ -2817,7 +2817,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         options={[{ value: 'steady', label: t('Steady') }, { value: 'ivl', label: t('Interval plan') }]} />
     </div>}
     {cardio && c.ivl && <div style={{ marginBottom: 18 }}>
-      <IntervalEditor plan={c.ivl} onChange={ivl => setC(x => ({ ...x, ivl }))} />
+      <IntervalEditor plan={c.ivl} ex={ex} speedUnit={speedUnit} onChange={ivl => setC(x => ({ ...x, ivl }))} />
       <div className="row cfgrow" style={{ marginTop: 10 }}>
         <Stepper label={speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} value={toSpeed(c.speed, speedUnit)} step={0.5}
           onChange={v => setC(x => ({ ...x, speed: fromSpeed(v, speedUnit) }))} />

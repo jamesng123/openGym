@@ -5924,4 +5924,8 @@ export default {
   "{0} steps": "{0} adım",
   "Cool-down": "Soğuma",
   "Pyramid": "Piramit",
+  "Machine settings": "Makine ayarları",
+  "Pace {0}": "Tempo {0}",
+  "Set to {0}": "{0} olarak ayarla",
+  "Hills": "Yokuşlar",
 }

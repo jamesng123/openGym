@@ -9,7 +9,8 @@ import { t } from '../lib/i18n.js'
 import { EXIDX } from '../lib/exercises.js'
 import { exerciseNameText } from '../lib/format.js'
 import { leftOf, intoStep, stepEndsAt, hrRange, hrStatus, maxHrOf, flatten, planTotals, rowsOf } from '../lib/cardio-intervals.js'
-import { kindName, effortText, stepSize, stepLine, fmtClock, intervalsLine } from '../lib/cardio-intervals-copy.js'
+import { kindName, effortText, stepSize, stepLine, fmtClock, intervalsLine, machineText } from '../lib/cardio-intervals-copy.js'
+import { speedUnitOf } from '../lib/speed.js'
 import { onLiveHeartRate } from '../lib/phone-workout.js'
 import { useWakeLock } from '../lib/wakelock.js'
 import { setOverlayBack } from '../lib/back.js'
@@ -56,13 +57,13 @@ function VoiceToggle() {
   </button>
 }
 
-function StepList({ steps, from = 0, maxHr, cur = -1 }) {
+function StepList({ steps, from = 0, maxHr, cur = -1, unit }) {
   return <ol className="cp-stations ivl-list">{steps.slice(from).map((s, k) => {
     const i = from + k
     return <li key={i} className={'cp-st ivl-li' + (i === cur ? ' on' : '')} data-kind={s.k}>
       <span className="ivl-dot" aria-hidden="true" />
       <span className="cp-st-m"><span className="cp-st-n">{kindName(s.k)}{s.rep ? ` ${s.rep.i}/${s.rep.n}` : ''}</span>
-        <span className="cp-st-s">{[stepSize(s), effortText(s.eff, maxHr)].filter(Boolean).join(' · ')}</span></span>
+        <span className="cp-st-s">{[stepSize(s), effortText(s.eff, maxHr), machineText(s, unit)].filter(Boolean).join(' · ')}</span></span>
     </li>
   })}</ol>
 }
@@ -86,7 +87,7 @@ function Ready({ S, close }) {
     <p className="cp-ready-s">{intervalsLine(plan)}{sec ? '' : ''}</p>
     {open > 0 && <p className="cp-ready-s">{t('Distance steps end when you tap Done.')}</p>}
     {needsMax && <p className="cp-ready-s">{t('Add your max heart rate in the exercise settings to see zones in bpm.')}</p>}
-    <StepList steps={steps} maxHr={maxHr} />
+    <StepList steps={steps} maxHr={maxHr} unit={speedUnitOf(S)} />
     <div className="cp-ready-go">
       <Button variant="primary" icon="play" onClick={() => useIntervals.getState().start()}>{t('Start')}</Button>
     </div>
@@ -108,7 +109,7 @@ function Result({ S, run, close }) {
     <div className="cp-score">{fmtClock(total)}</div>
     <ol className="cp-rounds">{rows.map((r, k) => {
       const s = run.steps[r.ivl.n - 1] || {}
-      return <li key={k}><span>{stepLine(s, maxHr)}</span>
+      return <li key={k}><span>{stepLine(s, maxHr, speedUnitOf(S))}</span>
         <span className="cp-num">{fmtClock(r.min * 60)}{r.hr ? ` ♥ ${r.hr.avg}` : ''}</span></li>
     })}</ol>
     <p className="cp-ready-s">{t('Rate how hard each step felt on its row in the workout.')}</p>
@@ -131,6 +132,8 @@ function Running({ S, run, close }) {
   const range = hrRange(step.eff, maxHr)
   const status = hrStatus(bpm, range)
   const next = run.steps[run.i + 1]
+  const unit = speedUnitOf(S)
+  const setTo = machineText(step, unit, { pace: true })
   return <div className={'cp-body cp-run is-' + phase}>
     <div className="cp-top">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="chevronDown" /></button>
@@ -145,17 +148,18 @@ function Running({ S, run, close }) {
         {step.m != null && <span className="cp-cap">{stepSize(step)}</span>}
       </div>
     </div>
-    <span className="vh" aria-live="polite">{stepLine(step, maxHr)}</span>
+    <span className="vh" aria-live="polite">{stepLine(step, maxHr, unit)}</span>
     <section className="cp-station" aria-label={kindName(step.k)}>
       <span className="cp-kicker">{t('Target')}</span>
-      <h2 className="cp-name">{effortText(step.eff, maxHr) || t('Your own pace')}</h2>
+      <h2 className="cp-name">{effortText(step.eff, maxHr) || (setTo ? '' : t('Your own pace'))}</h2>
+      {setTo && <div className="ivl-set" data-machine><Icon name="gauge" /><span>{t('Set to {0}', setTo)}</span></div>}
       {(bpm != null || range) && <div className={'ivl-hr' + (status ? ' ' + status : '')} data-hr-status={status || ''}>
         <Icon name="heart" />
         <span className="cp-num">{bpm != null ? `${bpm} bpm` : t('No heart rate yet')}</span>
         {status && <span className="ivl-hr-s">{status === 'below' ? t('Push a little') : status === 'above' ? t('Ease off') : t('In the zone')}</span>}
       </div>}
     </section>
-    {next && <div className="cp-after"><span className="cp-kicker">{t('Then')}</span><span>{stepLine(next, maxHr)}</span></div>}
+    {next && <div className="cp-after"><span className="cp-kicker">{t('Then')}</span><span>{stepLine(next, maxHr, unit)}</span></div>}
     <div className="cp-ctrl">
       {run.paused != null
         ? <button type="button" className="cp-side" onClick={() => c.resume()}><Icon name="play" /><span>{t('Resume')}</span></button>

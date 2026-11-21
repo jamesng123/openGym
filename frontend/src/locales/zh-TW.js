@@ -5917,4 +5917,8 @@ export default {
   "{0} steps": "{0} 個步驟",
   "Cool-down": "緩和",
   "Pyramid": "金字塔",
+  "Machine settings": "器材設定",
+  "Pace {0}": "配速 {0}",
+  "Set to {0}": "設為 {0}",
+  "Hills": "爬坡",
 }

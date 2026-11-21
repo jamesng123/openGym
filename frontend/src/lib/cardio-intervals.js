@@ -14,6 +14,9 @@
 //           { rpe }        1 to 10
 //           { lo, hi }     a heart-rate range in bpm
 //           { zone }       1 to 5, as a share of the profile's max heart rate (ZONES)
+//   speed, incline, level   the machine's settings for the step, each optional: km/h, percent
+//         (a treadmill's grade, on the half percent) and resistance 1 to 30 (a bike, a rower).
+//         A step without them runs at the slot's own speed, flat, at no set level.
 //
 // Running it walks the steps in order, repeats unrolled (flatten). Each step done is logged as
 // one cardio set ({ min, km?, rpe?, hr? } plus `ivl` saying which step it was), so stats,
@@ -77,6 +80,19 @@ export function cleanStep(s) {
   }
   const eff = cleanEffort(s.eff)
   if (eff) out.eff = eff
+  Object.assign(out, cleanMachine(s))
+  return out
+}
+
+/** A step's machine settings, only the ones it has: { speed, incline, level }. */
+export function cleanMachine(s) {
+  const out = {}
+  const speed = Math.round(Number(s?.speed) * 10) / 10
+  if (speed > 0) out.speed = Math.min(40, speed)
+  const incline = Math.round(Number(s?.incline) * 2) / 2
+  if (incline > 0) out.incline = Math.min(40, incline)
+  const level = Math.round(Number(s?.level))
+  if (level > 0) out.level = Math.min(30, level)
   return out
 }
 
@@ -108,7 +124,7 @@ export function flatten(plan) {
   const out = []
   const push = (s, at, rep) => {
     if (out.length >= MAX_FLAT) return
-    out.push({ k: s.k, sec: s.sec ?? null, m: s.m ?? null, eff: s.eff || null, at, rep })
+    out.push({ k: s.k, sec: s.sec ?? null, m: s.m ?? null, eff: s.eff || null, ...cleanMachine(s), at, rep })
   }
   clean.steps.forEach((it, at) => {
     if (!it.rep) { push(it, at, null); return }
@@ -282,6 +298,7 @@ export const PRESETS = {
   classic: { steps: [st('warm', 600, { rpe: 3 }), { rep: 5, steps: [st('work', 180, { rpe: 8 }), st('rec', 120, { rpe: 3 })] }, st('cool', 300, { rpe: 2 })] },
   norwegian: { steps: [st('warm', 600, { zone: 2 }), { rep: 4, steps: [st('work', 240, { zone: 5 }), st('rec', 180, { zone: 2 })] }, st('cool', 300, { zone: 1 })] },
   pyramid: { steps: [st('warm', 600, { rpe: 3 }), st('work', 60, { rpe: 8 }), st('rec', 60, { rpe: 3 }), st('work', 120, { rpe: 8 }), st('rec', 60, { rpe: 3 }), st('work', 180, { rpe: 8 }), st('rec', 90, { rpe: 3 }), st('work', 120, { rpe: 8 }), st('rec', 60, { rpe: 3 }), st('work', 60, { rpe: 9 }), st('cool', 300, { rpe: 2 })] },
+  hills: { steps: [st('warm', 600, { rpe: 3 }), { rep: 6, steps: [{ ...st('work', 120, { rpe: 8 }), incline: 6 }, { ...st('rec', 120, { rpe: 3 }), incline: 1 }] }, st('cool', 300, { rpe: 2 })] },
   tempo: { steps: [st('warm', 600, { zone: 2 }), st('work', 1200, { zone: 3 }), st('cool', 600, { zone: 1 })] },
 }
 export const PRESET_KEYS = Object.keys(PRESETS)
@@ -306,7 +323,9 @@ export function plannedRows(cfg) {
   return flatten(cfg?.ivl).map((s, i) => ({
     min: s.sec != null ? Math.round(s.sec / 6) / 10 : 0,
     ...(s.m != null ? { km: s.m / 1000 } : {}),
-    speed,
+    speed: s.speed ?? speed,
+    ...(s.incline ? { incline: s.incline } : {}),
+    ...(s.level ? { level: s.level } : {}),
     ivl: { k: s.k, n: i + 1 },
     done: false,
   }))
@@ -319,14 +338,19 @@ export function writeRows(entry, run) {
   const sets = Array.isArray(entry.sets) ? entry.sets : []
   const byN = new Map(rows.map(r => [r.ivl.n, r]))
   const speed = sets.find(s => Number(s?.speed) > 0)?.speed
+  // What the row was set to (its speed, incline, level) stays; the run brings what was done.
+  const machineOf = (row, step) => {
+    const m = { ...(speed ? { speed } : {}), ...cleanMachine(step), ...cleanMachine(row) }
+    return m
+  }
   const out = []
   const seen = new Set()
   for (const s of sets) {
     const n = s?.ivl?.n
-    if (n && byN.has(n)) { out.push({ ...(speed ? { speed } : {}), ...byN.get(n) }); seen.add(n); continue }
+    if (n && byN.has(n)) { out.push({ ...machineOf(s, run.steps[n - 1]), ...byN.get(n) }); seen.add(n); continue }
     out.push(s)
   }
-  for (const r of rows) if (!seen.has(r.ivl.n)) out.push({ ...(speed ? { speed } : {}), ...r })
+  for (const r of rows) if (!seen.has(r.ivl.n)) out.push({ ...machineOf(null, run.steps[r.ivl.n - 1]), ...r })
   // A step logged without a speed and with a distance reads as distance and pace (history.js setLabel).
   entry.sets = out
   return entry

@@ -32,9 +32,30 @@ export function effortText(eff, maxHr) {
 /** How long or how far: "3:00", "400 m". */
 export const stepSize = s => (s?.m != null ? fmtM(s.m) : fmtClock(s?.sec))
 
-/** "Work · 3:00 · RPE 8" */
-export function stepLine(s, maxHr) {
-  return [kindName(s.k), stepSize(s), effortText(s.eff, maxHr)].filter(Boolean).join(' · ')
+/** A speed in the profile's unit: "12 km/h", "7.5 mph". */
+const fmtSpd = (kmh, unit) => (unit === 'mph' ? `${Math.round(kmh / 1.609344 * 10) / 10} mph` : `${Math.round(kmh * 10) / 10} km/h`)
+
+/** "4:30 /km": the pace a speed runs at (per mile in mph). */
+export function paceOf(kmh, unit) {
+  const v = unit === 'mph' ? kmh / 1.609344 : kmh
+  if (!(v > 0)) return ''
+  const sec = Math.round(3600 / v)
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')} /${unit === 'mph' ? 'mi' : 'km'}`
+}
+
+/** The machine's settings for a step: "12 km/h (5:00 /km) · 2% incline", "Level 8", or ''. */
+export function machineText(s, unit, { pace = false } = {}) {
+  if (!s) return ''
+  const parts = []
+  if (s.speed > 0) parts.push(fmtSpd(s.speed, unit) + (pace ? ` (${paceOf(s.speed, unit)})` : ''))
+  if (s.incline > 0) parts.push(t('{0}% incline', String(s.incline)))
+  if (s.level > 0) parts.push(t('Level {0}', String(s.level)))
+  return parts.join(' · ')
+}
+
+/** "Work · 3:00 · RPE 8 · 12 km/h · 2% incline" */
+export function stepLine(s, maxHr, unit) {
+  return [kindName(s.k), stepSize(s), effortText(s.eff, maxHr), machineText(s, unit)].filter(Boolean).join(' · ')
 }
 
 /** The plan in one line, for the routine: "Intervals · 32:00 · 6 steps", "Intervals · 20:00 + 2 km". */
@@ -46,11 +67,11 @@ export function intervalsLine(plan) {
 }
 
 /** What the player says when a step begins: "Work. 3 minutes. RPE 8." */
-export function cueText(s, maxHr) {
+export function cueText(s, maxHr, unit) {
   if (!s) return ''
   const size = s.m != null ? fmtM(s.m)
     : s.sec % 60 === 0 ? t('{0} min', s.sec / 60) : t('{0} seconds', s.sec)
-  return [kindName(s.k), size, effortText(s.eff ? (s.eff.zone ? { zone: s.eff.zone } : s.eff) : null, maxHr)].filter(Boolean).join('. ') + '.'
+  return [kindName(s.k), size, effortText(s.eff ? (s.eff.zone ? { zone: s.eff.zone } : s.eff) : null, maxHr), machineText(s, unit)].filter(Boolean).join('. ') + '.'
 }
 
-export const PRESET_NAME = { classic: '5 × 3 min', norwegian: '4 × 4 min', pyramid: 'Pyramid', tempo: 'Tempo' }
+export const PRESET_NAME = { classic: '5 × 3 min', norwegian: '4 × 4 min', pyramid: 'Pyramid', hills: 'Hills', tempo: 'Tempo' }

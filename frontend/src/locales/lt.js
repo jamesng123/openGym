@@ -5920,4 +5920,8 @@ export default {
   "{0} steps": "Žingsnių: {0}",
   "Cool-down": "Atvėsimas",
   "Pyramid": "Piramidė",
+  "Machine settings": "Treniruoklio nustatymai",
+  "Pace {0}": "Tempas {0}",
+  "Set to {0}": "Nustatyk {0}",
+  "Hills": "Įkalnės",
 }

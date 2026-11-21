@@ -8,13 +8,16 @@ import { STEP_KINDS, PRESETS, PRESET_KEYS, maxHrOf, planTotals, flatten } from '
 import { kindName, fmtClock, PRESET_NAME, effortText } from '../lib/cardio-intervals-copy.js'
 import { Button, Segmented } from './ui.jsx'
 import Stepper from './Stepper.jsx'
+import { inclineFits, levelFits, INCLINE_STEP, INCLINE_MAX, LEVEL_MAX } from '../lib/incline.js'
+import { toSpeed, fromSpeed } from '../lib/speed.js'
+import { paceOf } from '../lib/cardio-intervals-copy.js'
 
 const clone = p => JSON.parse(JSON.stringify(p || { steps: [] }))
 const effKind = eff => (!eff ? 'none' : eff.rpe != null ? 'rpe' : eff.zone != null ? 'zone' : 'bpm')
 const newEff = (kind, maxHr) => kind === 'rpe' ? { rpe: 7 } : kind === 'zone' ? { zone: 3 }
   : kind === 'bpm' ? (maxHr ? { lo: Math.round(maxHr * 0.7), hi: Math.round(maxHr * 0.8) } : { lo: 130, hi: 150 }) : null
 
-function StepEditor({ step, onChange, onRemove, onUp, onDown, label, maxHr }) {
+function StepEditor({ step, onChange, onRemove, onUp, onDown, label, maxHr, machine }) {
   const set = patch => onChange({ ...step, ...patch })
   const byDist = step.m != null
   const ek = effKind(step.eff)
@@ -43,6 +46,20 @@ function StepEditor({ step, onChange, onRemove, onUp, onDown, label, maxHr }) {
             onChange={v => set({ sec: Math.max(5, Math.floor(step.sec / 60) * 60 + Math.min(59, Math.round(v))) })} />
         </>}
     </div>
+    {/* The machine's settings for this step (a treadmill's speed and grade, a bike's level).
+        Left at 0, the step runs at the exercise's own speed, flat. */}
+    {machine && (machine.speed || machine.incline || machine.level) && <>
+      <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('Machine settings')}</div>
+      <div className="row cfgrow">
+        {machine.speed && <Stepper label={machine.unit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} value={step.speed ? toSpeed(step.speed, machine.unit) : 0} step={0.5} max={machine.unit === 'mph' ? 25 : 40}
+          onChange={v => { const { speed: _s, ...rest } = step; const kmh = fromSpeed(v, machine.unit); onChange(kmh > 0 ? { ...rest, speed: Math.round(kmh * 10) / 10 } : rest) }} />}
+        {machine.incline && <Stepper label={t('Incline (%)')} value={step.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX}
+          onChange={v => { const { incline: _i, ...rest } = step; onChange(v > 0 ? { ...rest, incline: v } : rest) }} />}
+        {machine.level && <Stepper label={t('Level')} value={step.level || 0} step={1} max={LEVEL_MAX} decimal={false}
+          onChange={v => { const { level: _l, ...rest } = step; onChange(v > 0 ? { ...rest, level: Math.round(v) } : rest) }} />}
+      </div>
+      {machine.speed && step.speed > 0 && <div className="small dim" style={{ marginTop: 4 }}>{t('Pace {0}', paceOf(step.speed, machine.unit))}</div>}
+    </>}
     <div className="small dim" style={{ margin: '10px 0 6px' }}>{t('Target effort')}</div>
     <Segmented className="seg-ivl" value={ek} onChange={k => { const eff = newEff(k, maxHr); const { eff: _e, ...rest } = step; onChange(eff ? { ...rest, eff } : rest) }}
       options={[{ value: 'none', label: t('None') }, { value: 'rpe', label: 'RPE' }, { value: 'zone', label: t('HR zone') }, { value: 'bpm', label: 'bpm' }]} />
@@ -58,7 +75,11 @@ function StepEditor({ step, onChange, onRemove, onUp, onDown, label, maxHr }) {
   </div>
 }
 
-export default function IntervalEditor({ plan, onChange }) {
+export default function IntervalEditor({ plan, onChange, ex, speedUnit = 'kmh' }) {
+  // Which settings a step can carry: speed on anything with a belt, wheel or flywheel, the grade
+  // where there is one (lib/incline.js), the resistance where there is a knob.
+  const hills = inclineFits(ex), knob = levelFits(ex)
+  const machine = { speed: hills || knob, incline: hills, level: knob, unit: speedUnit }
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const maxHr = maxHrOf(S)
@@ -85,14 +106,14 @@ export default function IntervalEditor({ plan, onChange }) {
             <Button size="xs" variant="ghost" icon="trash" aria-label={t('Remove repeat')} title={t('Remove repeat')} onClick={() => put(list => { list.splice(i, 1) })} />
           </span>
         </div>
-        {it.steps.map((s, j) => <StepEditor key={j} step={s} maxHr={maxHr} label={`${i + 1}.${j + 1}`}
+        {it.steps.map((s, j) => <StepEditor key={j} step={s} maxHr={maxHr} machine={machine} label={`${i + 1}.${j + 1}`}
           onChange={ns => put(list => { list[i].steps[j] = ns })}
           onRemove={() => put(list => { list[i].steps.splice(j, 1); if (!list[i].steps.length) list.splice(i, 1) })}
           onUp={j > 0 ? () => put(list => move(list[i].steps, j, -1)) : null}
           onDown={j < it.steps.length - 1 ? () => put(list => move(list[i].steps, j, 1)) : null} />)}
         <Button size="sm" icon="plus" onClick={() => put(list => { list[i].steps.push({ k: 'rec', sec: 60 }) })}>{t('Add step')}</Button>
       </div>
-      : <StepEditor key={i} step={it} maxHr={maxHr} label={String(i + 1)}
+      : <StepEditor key={i} step={it} maxHr={maxHr} machine={machine} label={String(i + 1)}
         onChange={ns => put(list => { list[i] = ns })}
         onRemove={() => put(list => { list.splice(i, 1) })}
         onUp={i > 0 ? () => put(list => move(list, i, -1)) : null}

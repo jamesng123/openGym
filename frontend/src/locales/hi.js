@@ -5924,4 +5924,8 @@ export default {
   "{0} steps": "{0} चरण",
   "Cool-down": "कूल-डाउन",
   "Pyramid": "पिरामिड",
+  "Machine settings": "मशीन सेटिंग",
+  "Pace {0}": "पेस {0}",
+  "Set to {0}": "{0} पर सेट करें",
+  "Hills": "चढ़ाई",
 }

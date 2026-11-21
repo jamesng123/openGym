@@ -5924,4 +5924,8 @@ export default {
   "{0} steps": "{0} 个步骤",
   "Cool-down": "放松",
   "Pyramid": "金字塔",
+  "Machine settings": "器械设置",
+  "Pace {0}": "配速 {0}",
+  "Set to {0}": "设为 {0}",
+  "Hills": "爬坡",
 }

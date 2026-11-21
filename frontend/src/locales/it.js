@@ -5934,4 +5934,8 @@ export default {
   "{0} steps": "{0} passi",
   "Cool-down": "Defaticamento",
   "Pyramid": "Piramide",
+  "Machine settings": "Impostazioni macchina",
+  "Pace {0}": "Passo {0}",
+  "Set to {0}": "Imposta {0}",
+  "Hills": "Salite",
 }
