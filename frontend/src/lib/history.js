@@ -7,6 +7,8 @@ import { cardioStartSpeed } from './cardio-kind.js'
 import { fmtDist, fmtPace } from './distance.js'
 import { setBandsOf, bandText, bandsOf, usesBands, withSetBands, nextBandsUp } from './bands.js'
 import { hasIncline, inclineFrom, hasLevel, levelFrom } from './incline.js'
+import { plannedRows, cleanPlan } from './cardio-intervals.js'
+import { intervalsLine } from './cardio-intervals-copy.js'
 import { isCardio, isHold, isDistanceEx, isOneLimb, isBodyweightEq, isAssisted, betterWeight, exerciseOf } from './exercises.js'
 import { barWeightFor } from './bar.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, splitClusterReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
@@ -340,6 +342,7 @@ function exLineText(cfg, unit, speedUnit) {
   const load = !cfg.weight ? ''
     : backoff ? ' · ' + ltrRun((isBw(cfg) ? '+' : '') + backoffWeights(cfg.weight, n, backoff).map(fmtNum).join(' → ') + ' ' + unit)
       : ' · ' + ltrRun((isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit)
+  if (mode === 'cardio' && cleanPlan(cfg.ivl)) return intervalsLine(cfg.ivl)
   if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtSpeed(cfg.speed || 8, speedUnit)}` + (hasIncline(cfg) ? ' · ' + t('{0}% incline', fmtNum(Number(cfg.incline))) : '') + (hasLevel(cfg) ? ' · ' + t('Level {0}', fmtNum(Number(cfg.level))) : '')
   // A timed hold has no rep count to spell a split out of ("8/side" below) — "per side" says it
   // happens twice, once each side (buildWorkSets), rather than trying to divide a duration.
@@ -741,6 +744,13 @@ function buildWorkSets(S, cfg, options = {}) {
   const planReps = !!options.planReps && !preferLast && cfg.reps > 0
 
   if (mode === 'cardio') {
+    // An interval plan (lib/cardio-intervals.js): one row per step, in the order they run, the
+    // speed last time's. The plan owns the durations, so history does not move them.
+    const steps = plannedRows(cfg)
+    if (steps.length) {
+      const speed = prevAt(0)?.speed
+      return speed > 0 ? steps.map(r => ({ ...r, speed })) : steps
+    }
     for (let i = 0; i < n; i++) {
       const prev = prevAt(i)
       // The grade is last time's when it had one, else the routine's own (set in the exercise's

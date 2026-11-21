@@ -4661,3 +4661,23 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Add set / Warm-up / Remove: 44px tall, the leading glyph on the card's content edge; wrapped siblings share the same edge */
 .wk-add{min-height:44px;margin-inline-start:-14px}
+
+/* ---------- interval cardio (components/IntervalEditor.jsx, IntervalPlayer.jsx) ---------- */
+.ivl-step{border:1px solid var(--sep, rgba(127,127,127,.25));border-radius:12px;padding:10px;margin-bottom:10px;border-inline-start-width:4px}
+.ivl-step[data-kind="warm"],.ivl-li[data-kind="warm"] .ivl-dot{border-inline-start-color:var(--blue)}
+.ivl-step[data-kind="work"]{border-inline-start-color:var(--orange)}
+.ivl-step[data-kind="rec"]{border-inline-start-color:var(--green)}
+.ivl-step[data-kind="cool"]{border-inline-start-color:var(--blue)}
+.ivl-rep{border:1px dashed var(--sep, rgba(127,127,127,.35));border-radius:14px;padding:10px;margin-bottom:10px}
+.ivl-rep .ivl-step{margin-top:10px}
+.ivl-list .ivl-li{align-items:center}
+.ivl-dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--blue);margin-inline-end:8px}
+.ivl-li[data-kind="work"] .ivl-dot{background:var(--orange)}
+.ivl-li[data-kind="rec"] .ivl-dot{background:var(--green)}
+.ivl-hr{display:inline-flex;gap:8px;align-items:center;margin-top:8px;padding:6px 12px;border-radius:999px;font-weight:600;background:rgba(127,127,127,.15)}
+.ivl-hr.in{background:rgba(48,209,88,.25);background:color-mix(in srgb, var(--green) 25%, transparent)}
+.ivl-hr.below{background:rgba(10,132,255,.25);background:color-mix(in srgb, var(--blue) 25%, transparent)}
+.ivl-hr.above{background:rgba(255,69,58,.25);background:color-mix(in srgb, var(--red) 25%, transparent)}
+.ivl-hr-s{font-weight:500;opacity:.85}
+.ivl-row{margin-inline-start:10px;align-self:center}
+.ivl-set{display:inline-flex;gap:8px;align-items:center;margin-top:8px;padding:6px 12px;border-radius:999px;font-weight:600;background:rgba(10,132,255,.18)}

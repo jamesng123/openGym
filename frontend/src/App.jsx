@@ -42,6 +42,8 @@ import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync, requestLiveFinish } from './lib/live-activity.js'
 import CircuitPlayer from './components/CircuitPlayer.jsx'
+import IntervalPlayer from './components/IntervalPlayer.jsx'
+import { wireIntervals, restoreIntervals } from './store/useIntervals.js'
 import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock, wantsWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
@@ -171,7 +173,7 @@ function Shell() {
   // Backup to WebDAV (#582): this device's daily copy, when one is set up (lib/webdav-run.js).
   useDailyWebdav(ready && !DEMO && !offlineBuild())
   // A circuit's clock that was running before a reload carries on from where it is now.
-  useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
+  useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit(); wireIntervals(); restoreIntervals() }, [ready])
   // Back from "Sign in with OpenRouter" on the admin card (lib/openrouter-signin.js): the code in
   // the address is traded for the key, which becomes the instance's OpenRouter key. Admin only,
   // English like the rest of the admin card.
@@ -459,6 +461,7 @@ function Shell() {
       <RestTimer />
       {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
       <CircuitPlayer />
+      <IntervalPlayer />
       <Modals />
       <Toast />
       <TimerFlash />

@@ -33,6 +33,8 @@ import { workoutSetVideos } from './lib/set-videos.js'
 import { mediaOf, normalizeMediaRef, cleanUrl, workoutMediaOf } from './lib/media-refs.js'
 import { syncMedia } from './lib/media-sync.js'
 import LineChart from './components/LineChart.jsx'
+import IntervalEditor from './components/IntervalEditor.jsx'
+import { cleanPlan, flatten, planTotals, PRESETS } from './lib/cardio-intervals.js'
 import Stepper from './components/Stepper.jsx'
 import DateField from './components/DateField.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
@@ -2732,7 +2734,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // The treadmill's grade, only when it has one, so a flat slot keeps the shape it had.
     const incline = clampIncline(c.incline)
     const level = clampLevel(c.level)
-    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withNext, ...withSubs })
+    // An interval plan (lib/cardio-intervals.js) owns the steps; sets and minutes follow it so
+    // every reader of the flat target still makes sense.
+    const ivl = cardio && c.ivl ? cleanPlan(c.ivl) : null
+    if (ivl) saveAs({ sets: Math.min(PLAN_MAX_SETS, Math.max(1, flatten(ivl).length)), min: Math.max(1, Math.round(planTotals(ivl).sec / 60)), speed: Math.max(0, c.speed || 8), ivl, ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withNext, ...withSubs })
+    else if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withNext, ...withSubs })
     else if (mode === 'distance') saveAs({ sets, mode: 'distance', m: Math.max(1, Math.round(c.m) || 20), weight: Math.max(0, c.weight || 0), ...flags, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else if (mode === 'time') saveAs({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else {
@@ -2804,7 +2810,20 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       <Segmented className="seg-range" value={mode} onChange={setMode}
         options={[...(cardioEx ? [{ value: 'cardio', label: t('Cardio') }] : []), { value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }, { value: 'distance', label: t('Distance') }]} />
     </div>
-    <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18 }}>
+    {/* Steady (sets of minutes at a speed) or an interval plan with targets (IntervalEditor). */}
+    {cardio && <div style={{ marginBottom: 14 }}>
+      <Segmented className="seg-ivl" value={c.ivl ? 'ivl' : 'steady'}
+        onChange={v => setC(x => { const { ivl: _ivl, ...rest } = x; return v === 'ivl' ? { ...rest, ivl: JSON.parse(JSON.stringify(x.ivlOff || PRESETS.classic)) } : { ...rest, ...(x.ivl ? { ivlOff: x.ivl } : {}) } })}
+        options={[{ value: 'steady', label: t('Steady') }, { value: 'ivl', label: t('Interval plan') }]} />
+    </div>}
+    {cardio && c.ivl && <div style={{ marginBottom: 18 }}>
+      <IntervalEditor plan={c.ivl} ex={ex} speedUnit={speedUnit} onChange={ivl => setC(x => ({ ...x, ivl }))} />
+      <div className="row cfgrow" style={{ marginTop: 10 }}>
+        <Stepper label={speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} value={toSpeed(c.speed, speedUnit)} step={0.5}
+          onChange={v => setC(x => ({ ...x, speed: fromSpeed(v, speedUnit) }))} />
+      </div>
+    </div>}
+    <div className="row cfgrow" style={{ marginBottom: mode === 'time' ? 8 : 18, ...(cardio && c.ivl ? { display: 'none' } : {}) }}>
       {cardio ? <>
         <Stepper label={t('Intervals')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Minutes')} value={c.min} step={1} decimal={false} onChange={v => setC(x => ({ ...x, min: v }))} />
